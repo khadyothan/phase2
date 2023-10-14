@@ -85,7 +85,7 @@ def task7():
     collection1_name = "phase2trainingdataset"
     collection2 = db["labelrepresentativeimages"]
     collection2_name = "labelrepresentativeimages"
-    caltech101_directory = "C:/Khadyu/ASU/Fall 2023/Multimedia & Web Databases/Project/Phase1/data"
+    caltech101_directory = os.path.join(path, "../../data")
     dataset = datasets.Caltech101(caltech101_directory, download=False)
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True, num_workers=8)
     
