@@ -23,9 +23,10 @@ import tasks.task5 as task5
 from math import log2
 from math import sqrt
 
-dataset_path = "/Users/lalitarvind/Downloads/MWD_Team_project_v2/phase2/"
-dataset = datasets.Caltech101(dataset_path,download=True)
+caltech101_directory = os.path.join(path, "../../data")
+dataset = datasets.Caltech101(caltech101_directory,download=False)
 category_names = dataset.annotation_categories 
+
 
 # calculate the kl divergence
 def kl_divergence(p, q):
@@ -38,7 +39,8 @@ def js_divergence(p, q):
 
 def probabilistic_dist(query, representatives):
     distances = []
-    for label,rep in representatives.items():
+    print("calculating js divergence")
+    for label,rep in enumerate(representatives):
         temp = sqrt(js_divergence(rep,query))
         distances.append((label,category_names[label],temp))
     distances = sorted(distances,key = lambda a:a[2],reverse=True)
@@ -54,19 +56,19 @@ def euclidian_dist(query, representatives):
     distances = sorted(distances,key = lambda a:a[2],reverse=True)
     return distances
 
-def task7_execution(query_image_data, query_latent_semantics, K, dataset, collection2):
+def task8_execution(query_image_data, query_latent_semantics, K, dataset, collection2):
     
     print("\nSelect a feature model(Select one among these): ")
     print("1. color_moments\n2. hog\n3. resnet50_layer3\n4. resnet50_avgpool\n5. resnet50_fc\n6. resnet_softmax\n")
-    query_feature_model = input("Enter input: ")
-    query_feature_model = str(query_feature_model)
-    
-    k = int(input("Enter k value: "))
-    
+    #query_feature_model = str(input("Enter input: "))
+    query_feature_model = "hog"
+    #k = int(input("Enter k value: "))
+    k = 15
     if query_latent_semantics != 2:
         print("Enter one of the following dimensional reduction techniques on the chosen feature model:\n")
         print("1. SVD\n2. NNMF\n3. LDA\n4. k-means\n")
-        dimredtech = input("Enter your choice: ")
+        #dimredtech = int(input("Enter dimensionality reduction technique: "))
+        dimredtech = 3
     
     if query_feature_model == "color_moments":
             query_image_vector = color_moments.color_moments(query_image_data)
@@ -81,16 +83,16 @@ def task7_execution(query_image_data, query_latent_semantics, K, dataset, collec
         elif query_feature_model == "resnet50_fc":
             query_image_vector = query_fc_vector 
         else:
-            query_image_vector = #add feature extraction for resnet softmax   
+            query_image_vector = resnet_features.resnetSoftmax(query_fc_vector)
     query_image_vector = np.ravel(query_image_vector)
     
     rep_keyname = {
-    "color_moments_feature_descriptor":["color_moments_rep_image","color_moments_image_id"],
-    "hog_feature_descriptor":["hog_rep_image","hog_image_id"],
-    "resnet50_layer3_feature_descriptor":["layer3_rep_image","layer3_image_id"],
-    "resnet50_avgpool_feature_descriptor":["avgpool_rep_image","avgpool_image_id"],
-    "resnet50_fc_feature_descriptor":["fc_rep_image","fc_image_id"],
-    "resnet_softmax_feature_descriptor":["resnet_softmax_rep_image","resnet_softmax_image_id"]
+    "color_moments":["color_moments_rep_image","color_moments_image_id"],
+    "hog":["hog_rep_image","hog_image_id"],
+    "resnet50_layer3":["layer3_rep_image","layer3_image_id"],
+    "resnet50_avgpool":["avgpool_rep_image","avgpool_image_id"],
+    "resnet50_fc":["fc_rep_image","fc_image_id"],
+    "resnet_softmax":["resnet_softmax_rep_image","resnet_softmax_image_id"]
     }
     
     representatives = list(collection2.find({},{rep_keyname[query_feature_model][0]:1,
@@ -100,22 +102,28 @@ def task7_execution(query_image_data, query_latent_semantics, K, dataset, collec
         query_image_vector_ls = latent_semantics[0]
         database_vectors_ls = latent_semantics[1:]
         representatives_ls = [database_vectors_ls[int(label_dict[rep_keyname[query_feature_model][1]]/2)] for label_dict in representatives]
-        if query_feature_model!="LDA":
+        if dimredtech!=3:
             distances = euclidian_dist(query_image_vector_ls,representatives_ls)
         else:
-            distance = probabilistic_dist(query_image_vector_ls,representatives_ls)
+            distances = probabilistic_dist(query_image_vector_ls,representatives_ls)
         print("Top k similar labels:\n",distances[:K])
         
-    if query_latent_semantics == 2:
+    elif query_latent_semantics == 2:
         latent_semantics = task4.task4_execution(query_feature_model, k, query_image_vector)
         query_image_vector_ls = latent_semantics[0]
         database_vectors_ls = latent_semantics[1:]
         representatives_ls = [database_vectors_ls[int(label_dict[rep_keyname[query_feature_model][1]]/2)] for label_dict in representatives]
-        if query_feature_model!="LDA":
+        distances = euclidian_dist(query_image_vector_ls,representatives_ls)
+        print("Top k similar labels:\n",distances[:K])
+    
+    elif query_latent_semantics == 3:
+        latent_semantics = task5.task5_execution(query_feature_model,k,dimredtech)
+        representatives_ls = [database_vectors_ls[int(label_dict[rep_keyname[query_feature_model][1]]/2)] for label_dict in representatives]
+        if dimredtech!=3:
             distances = euclidian_dist(query_image_vector_ls,representatives_ls)
         else:
-            distance = probabilistic_dist(query_image_vector_ls,representatives_ls)
-        print("Top k similar labels:\n",distances[:K])
+            distances = probabilistic_dist(query_image_vector_ls,representatives_ls)
+        query_image_rep = distances[0]
     return True
 
 def task8():
@@ -130,11 +138,13 @@ def task8():
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True, num_workers=8)
     
     print("Enter '1' if you want to give an image ID as input or enter '2' if you want to give Image File as an Input: ")
-    query_type = int(input("Enter query type: "))
+    #query_type = int(input("Enter query type: "))
+    query_type = 1
     query_image_id = None
     query_image_file = None
     if query_type == 1:
-        query_image_id = int(input("Enter query image ID: "))
+        #query_image_id = int(input("Enter query image ID: "))
+        query_image_id = 2500
     elif query_type == 2:
         query_image_file = input("Give the query image file path: ")
     else: 
@@ -150,10 +160,10 @@ def task8():
         
     print("Enter any of the Latent Semantics: \n1. LS1\n2. LS2\n3. LS3\n4. LS4\n")
     
-    query_latent_semantics = int(input("Enter your choice number: "))
-    
-    K = int(input("Enter K value for finding K similar labels: "))
-    
+    #query_latent_semantics = int(input("Enter your choice number: "))
+    query_latent_semantics = 1
+    #K = int(input("Enter K value for finding K similar labels: "))
+    K = 10
     if query_image_id != None:
         for image_id, (image, label) in enumerate(dataset):
             if image_id == int(query_image_id):
@@ -162,3 +172,6 @@ def task8():
     elif query_image_file != None:
         query_image_data = Image.open(query_image_file)    
     task8_execution(query_image_data, query_latent_semantics, K, dataset, collection2)
+
+
+task8()

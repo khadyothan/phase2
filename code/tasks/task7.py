@@ -45,8 +45,11 @@ def task7_execution(query_image_data, query_latent_semantics, K, dataset, collec
             query_image_vector = query_layer3_vector
         elif query_feature_model == "resnet50_avgpool":
             query_image_vector = query_avgpool_vector
+        elif query_feature_model == "resnet50_fc":
+            query_image_vector = query_fc_vector  
         else:
-            query_image_vector = query_fc_vector    
+            query_image_vector = resnet_features.resnetSoftmax(query_fc_vector)  
+    
     query_image_vector = np.ravel(query_image_vector)
     
     if query_latent_semantics == 1:
