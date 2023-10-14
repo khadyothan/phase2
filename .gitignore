@@ -1,0 +1,7 @@
+*.csv
+*.npy
+*.txt
+*.pkl
+*.json
+*.pyc
+data/
