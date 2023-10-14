@@ -5,19 +5,27 @@ import numpy as np
 from sklearn.decomposition import LatentDirichletAllocation
 
 def lda(data_matrix, k):
-    print(data_matrix.shape)
+    # print(data_matrix.shape)
+    # data_matrix = np.array(data_matrix)
+    # data_matrix_min_val = data_matrix.min()
+    # if data_matrix_min_val<0:
+    #     data_matrix = data_matrix - data_matrix_min_val
+        
+    # lda = LatentDirichletAllocation(n_components=k,verbose=True)
+    # model = lda.fit(data_matrix)
+    # LDA_factor_matrix = lda.components_ /lda.components_.sum(axis=1)[:, np.newaxis]
+    
+    # query_distribution = np.matmul(data_matrix,np.transpose(LDA_factor_matrix))
+    # return LDA_factor_matrix, query_distribution
     data_matrix = np.array(data_matrix)
     data_matrix_min_val = data_matrix.min()
     if data_matrix_min_val<0:
         data_matrix = data_matrix - data_matrix_min_val
-        
     lda = LatentDirichletAllocation(n_components=k,verbose=True)
-    model = lda.fit(data_matrix)
+    lda.fit(data_matrix)
     LDA_factor_matrix = lda.components_ /lda.components_.sum(axis=1)[:, np.newaxis]
-    
-    query_distribution = np.matmul(data_matrix,np.transpose(LDA_factor_matrix))
+    query_distribution = lda.transform(data_matrix)
     return LDA_factor_matrix, query_distribution
-
 
 def calculateImageIDWeightPairs(latent_semantics, feature_descriptor, k, type): 
     image_id_weight_pairs = []
