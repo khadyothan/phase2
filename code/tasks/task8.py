@@ -20,6 +20,7 @@ import phase_1.printing_images_dict as printing_images_dict
 import tasks.task3 as task3
 import tasks.task4 as task4
 import tasks.task5 as task5
+import tasks.task6 as task6
 from math import log2
 from math import sqrt
 
@@ -118,12 +119,29 @@ def task8_execution(query_image_data, query_latent_semantics, K, dataset, collec
     
     elif query_latent_semantics == 3:
         latent_semantics = task5.task5_execution(query_feature_model,k,dimredtech)
-        representatives_ls = [database_vectors_ls[int(label_dict[rep_keyname[query_feature_model][1]]/2)] for label_dict in representatives]
+        representatives_features = [label_dict[rep_keyname[query_feature_model][0]] for label_dict in representatives]
+        distances_to_reps = euclidian_dist(query_image_vector,representatives_features)
+        query_image_rep_label_no = distances_to_reps[0][0]
+        query_rep_ls=latent_semantics[query_image_rep_label_no]
         if dimredtech!=3:
-            distances = euclidian_dist(query_image_vector_ls,representatives_ls)
+            distances = euclidian_dist(query_rep_ls,latent_semantics)
         else:
-            distances = probabilistic_dist(query_image_vector_ls,representatives_ls)
-        query_image_rep = distances[0]
+            distances = probabilistic_dist(query_rep_ls,latent_semantics)
+        print("Top k similar labels:\n",distances[:K])
+        
+    elif query_latent_semantics == 4:
+        latent_semantics = task6.task6_execution(query_feature_model,k,dimredtech)
+        representatives_features = [label_dict[rep_keyname[query_feature_model][0]] for label_dict in representatives]
+        distances_to_reps = euclidian_dist(query_image_vector,representatives_features)
+        query_image_rep_label_no = distances_to_reps[0][0]
+        query_rep_ls=latent_semantics[query_image_rep_label_no]
+        if dimredtech!=3:
+            distances = euclidian_dist(query_rep_ls,latent_semantics)
+        else:
+            distances = probabilistic_dist(query_rep_ls,latent_semantics)
+        print("Top k similar labels:\n",distances[:K])
+
+
     return True
 
 def task8():
