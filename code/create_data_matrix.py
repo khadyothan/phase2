@@ -26,8 +26,8 @@ if __name__ == "__main__":
     caltech101_directory = os.path.join(path, "../data")
     dataset = datasets.Caltech101(caltech101_directory, download=False)
     
-    feature_models = ["color_moments", "hog", "resnet50_layer3", "resnet50_avgpool", "resnet50_fc"]
+    feature_models = ["color_moments", "hog", "resnet50_layer3", "resnet50_avgpool", "resnet50_fc",'resnet_softmax_feature_descriptor']
     for i in range(len(feature_models)):
         data_matrix = createMatrix(feature_models[i] + "_feature_descriptor")
-        file_path = f"{os.path.join(os.getcwd(), f'../data_matrices/data_matrix_{feature_models[i]}.csv')}"
+        file_path = f"{os.path.join(os.getcwd(), f'data_matrices/data_matrix_{feature_models[i]}.csv')}"
         np.savetxt(file_path, data_matrix, delimiter=",")
