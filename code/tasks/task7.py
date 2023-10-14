@@ -75,7 +75,7 @@ def task7_execution(query_image_data, query_latent_semantics, K, dataset, collec
         images_to_display = {image_id: {'image': image, 'score': top_k_similar_images[image_id]} for image_id, (image, label) in enumerate(dataset) if image_id in top_k_similar_images}
         printing_images_dict.print_images(images_to_display, "LS1", target_size=(224, 224))
         
-              
+           
     return True
 
 def task7():

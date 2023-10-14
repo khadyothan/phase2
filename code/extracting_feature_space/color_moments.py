@@ -1,7 +1,12 @@
 import numpy as np
+from PIL import Image
 
 # Function to calculate color moments feature descriptor for an image
 def color_moments(image):
+    if(len(np.array(image).shape) != 3):
+        converted_img  = np.stack((np.array(image),) * 3, axis=-1)
+        image = Image.fromarray(converted_img)
+        
     # Convert the input image to a NumPy array and resize it to a fixed size (300x100)
     image_data = np.array(image.resize((300, 100)))
     

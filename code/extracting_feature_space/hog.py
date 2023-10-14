@@ -1,7 +1,11 @@
 import numpy as np
+from PIL import Image
 
 # Function to calculate Histogram of Oriented Gradients (HOG) feature descriptor for an image
 def HOG(image):
+    if(len(np.array(image).shape) != 3):
+        converted_img  = np.stack((np.array(image),) * 3, axis=-1)
+        image = Image.fromarray(converted_img)
     # Initialize an empty array for the HOG feature descriptor
     hog_feature_descriptor = np.zeros((10, 10, 9), dtype=np.float64)
     

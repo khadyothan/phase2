@@ -1,6 +1,8 @@
+import numpy as np
 import torch
 import torchvision.transforms as transforms
 from torchvision import models
+from PIL import Image
 
 # Function to get intermediate layer output using a hook
 def getHook(model, layer_name):
@@ -37,6 +39,10 @@ def resnet_features(image):
     # Initialize lists to store intermediate layer outputs and hooks
     outputs = []
     
+    if(len(np.array(image).shape) != 3):
+        converted_img  = np.stack((np.array(image),) * 3, axis=-1)
+        image = Image.fromarray(converted_img)
+        
     # Apply transformations to the input image
     image = transform(image).unsqueeze(0)
     
