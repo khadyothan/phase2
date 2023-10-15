@@ -57,19 +57,29 @@ def euclidian_dist(query, representatives):
     distances = sorted(distances,key = lambda a:a[2],reverse=True)
     return distances
 
+def euclidian_dist_plain(query, datamatrix):
+    distances = []
+    for img_id,item in enumerate(datamatrix):
+        dist = 0
+        for i,val in enumerate(item):
+            dist+=(val - query[i])**2
+        distances.append((img_id,dist))
+    distances = sorted(distances,key = lambda a:a[1],reverse=True)
+    return distances
+
 def task8_execution(query_image_data, query_latent_semantics, K, dataset, collection2):
     
     print("\nSelect a feature model(Select one among these): ")
     print("1. color_moments\n2. hog\n3. resnet50_layer3\n4. resnet50_avgpool\n5. resnet50_fc\n6. resnet_softmax\n")
-    #query_feature_model = str(input("Enter input: "))
-    query_feature_model = "hog"
-    #k = int(input("Enter k value: "))
-    k = 15
+    query_feature_model = str(input("Enter input: "))
+    #query_feature_model = "hog"
+    k = int(input("Enter k value: "))
+    #k = 15
     if query_latent_semantics != 2:
         print("Enter one of the following dimensional reduction techniques on the chosen feature model:\n")
         print("1. SVD\n2. NNMF\n3. LDA\n4. k-means\n")
-        #dimredtech = int(input("Enter dimensionality reduction technique: "))
-        dimredtech = 3
+        dimredtech = int(input("Enter dimensionality reduction technique: "))
+        #dimredtech = 1
     
     if query_feature_model == "color_moments":
             query_image_vector = color_moments.color_moments(query_image_data)
@@ -131,16 +141,16 @@ def task8_execution(query_image_data, query_latent_semantics, K, dataset, collec
         
     elif query_latent_semantics == 4:
         latent_semantics = task6.task6_execution(query_feature_model,k,dimredtech)
-        representatives_features = [label_dict[rep_keyname[query_feature_model][0]] for label_dict in representatives]
-        distances_to_reps = euclidian_dist(query_image_vector,representatives_features)
-        query_image_rep_label_no = distances_to_reps[0][0]
-        query_rep_ls=latent_semantics[query_image_rep_label_no]
+        data_matrix = np.loadtxt(f"{os.path.join(os.getcwd(), f'../data_matrices/data_matrix_{query_feature_model}.csv')}", delimiter=',')
+        distances = euclidian_dist_plain(query_image_vector,data_matrix)
+        query_image_vector_ls = latent_semantics[distances[0][0]]
+        representatives_ls = [latent_semantics[int(label_dict[rep_keyname[query_feature_model][1]]/2)] for label_dict in representatives]
         if dimredtech!=3:
-            distances = euclidian_dist(query_rep_ls,latent_semantics)
+            distances = euclidian_dist(query_image_vector_ls,representatives_ls)
         else:
-            distances = probabilistic_dist(query_rep_ls,latent_semantics)
+            distances = probabilistic_dist(query_image_vector_ls,representatives_ls)
         print("Top k similar labels:\n",distances[:K])
-
+        
 
     return True
 
@@ -161,8 +171,8 @@ def task8():
     query_image_id = None
     query_image_file = None
     if query_type == 1:
-        #query_image_id = int(input("Enter query image ID: "))
-        query_image_id = 2500
+        query_image_id = int(input("Enter query image ID: "))
+        #query_image_id = 2500
     elif query_type == 2:
         query_image_file = input("Give the query image file path: ")
     else: 
@@ -178,10 +188,10 @@ def task8():
         
     print("Enter any of the Latent Semantics: \n1. LS1\n2. LS2\n3. LS3\n4. LS4\n")
     
-    #query_latent_semantics = int(input("Enter your choice number: "))
-    query_latent_semantics = 1
-    #K = int(input("Enter K value for finding K similar labels: "))
-    K = 10
+    query_latent_semantics = int(input("Enter your choice number: "))
+    #query_latent_semantics = 4
+    K = int(input("Enter K value for finding K similar labels: "))
+    #K = 10
     if query_image_id != None:
         for image_id, (image, label) in enumerate(dataset):
             if image_id == int(query_image_id):

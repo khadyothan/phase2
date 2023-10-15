@@ -22,7 +22,7 @@ def createMatrix(feature_descriptor):
                 similarity = similarity_matrix[0, 0]
                 image_similarity_matrix[i, j] = similarity
                 image_similarity_matrix[j, i] = similarity 
-            print(i, j)
+        print(i)
     return image_similarity_matrix
     
 if __name__ == "__main__":
@@ -31,9 +31,9 @@ if __name__ == "__main__":
     collection = db["phase2trainingdataset"]
     caltech101_directory = os.path.join(path, "../data")
     dataset = datasets.Caltech101(caltech101_directory, download=False)
-    
-    feature_models = ["color_moments", "hog", "resnet50_layer3", "resnet50_avgpool", "resnet50_fc","resnet_softmax"]
+    #"color_moments", "hog",, "resnet50_fc","resnet_softmax"
+    feature_models = [ "resnet50_layer3", "resnet50_avgpool"]
     for i in range(len(feature_models)):
         data_matrix = createMatrix(feature_models[i] + "_feature_descriptor")
-        file_path = f"{os.path.join(os.getcwd(), f'../image_image_sm_matrices/image_image_sm_{feature_models[i]}.csv')}"
+        file_path = f"{os.path.join(os.getcwd(), f'/image_image_sm_matrices/image_image_sm_{feature_models[i]}.csv')}"
         np.savetxt(file_path, data_matrix, delimiter=",")
