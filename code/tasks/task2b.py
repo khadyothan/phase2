@@ -60,7 +60,7 @@ def task2b(query_features, k):
         for i in range(len(rep["resnet_softmax_rep_image"])):
             temp = (rep["resnet_softmax_rep_image"][i]-query_features[i])**2
         distances.append((rep["label"],category_names[rep["label"]],float(temp)**0.5))
-    distances = sorted(distances,key = lambda a:a[2],reverse=True)
+    distances = sorted(distances,key = lambda a:a[2])
     return distances[:k]
 
 
@@ -88,4 +88,6 @@ if __name__ == "__main__":
     k = int(input("Enter k: "))
 
     distances = task2b(query_image_features[0], k)
-    print(distances)
+    print(f"Top {k} labels:\n")
+    for item in distances:
+        print(f"label id:{item[0]}, category: {item[1]}, distance: {item[2]}\n")
