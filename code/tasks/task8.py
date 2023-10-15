@@ -27,7 +27,10 @@ from math import sqrt
 caltech101_directory = os.path.join(path, "../../data")
 dataset = datasets.Caltech101(caltech101_directory,download=False)
 category_names = dataset.annotation_categories 
-
+cl = pymongo.MongoClient("mongodb://localhost:27017")
+db = cl["caltech101db"]
+collection1 = db["phase2trainingdataset"]
+collection2 = db["labelrepresentativeimages"]
 
 # calculate the kl divergence
 def kl_divergence(p, q):
@@ -44,7 +47,7 @@ def probabilistic_dist(query, representatives):
     for label,rep in enumerate(representatives):
         temp = sqrt(js_divergence(rep,query))
         distances.append((label,category_names[label],temp))
-    distances = sorted(distances,key = lambda a:a[2],reverse=True)
+    distances = sorted(distances,key = lambda a:a[2])
     return distances
 
 def euclidian_dist(query, representatives):
@@ -54,7 +57,7 @@ def euclidian_dist(query, representatives):
         for i in range(len(rep)):
             temp = (rep[i]-float(query[i]))**2
         distances.append((j,category_names[j],temp**0.5))
-    distances = sorted(distances,key = lambda a:a[2],reverse=True)
+    distances = sorted(distances,key = lambda a:a[2])
     return distances
 
 def euclidian_dist_plain(query, datamatrix):
@@ -64,10 +67,10 @@ def euclidian_dist_plain(query, datamatrix):
         for i,val in enumerate(item):
             dist+=(val - query[i])**2
         distances.append((img_id,dist))
-    distances = sorted(distances,key = lambda a:a[1],reverse=True)
+    distances = sorted(distances,key = lambda a:a[1])
     return distances
 
-def task8_execution(query_image_data, query_latent_semantics, K, dataset, collection2):
+def task8_execution(query_image_data, query_latent_semantics, K):
     
     print("\nSelect a feature model(Select one among these): ")
     print("1. color_moments\n2. hog\n3. resnet50_layer3\n4. resnet50_avgpool\n5. resnet50_fc\n6. resnet_softmax\n")
@@ -117,7 +120,10 @@ def task8_execution(query_image_data, query_latent_semantics, K, dataset, collec
             distances = euclidian_dist(query_image_vector_ls,representatives_ls)
         else:
             distances = probabilistic_dist(query_image_vector_ls,representatives_ls)
-        print("Top k similar labels:\n",distances[:K])
+
+        print(f"Top {K} labels:\n")
+        for item in distances[:K]:
+            print(f"label id:{item[0]}, category: {item[1]}, distance: {item[2]}")
         
     elif query_latent_semantics == 2:
         latent_semantics = task4.task4_execution(query_feature_model, k, query_image_vector)
@@ -125,7 +131,9 @@ def task8_execution(query_image_data, query_latent_semantics, K, dataset, collec
         database_vectors_ls = latent_semantics[1:]
         representatives_ls = [database_vectors_ls[int(label_dict[rep_keyname[query_feature_model][1]]/2)] for label_dict in representatives]
         distances = euclidian_dist(query_image_vector_ls,representatives_ls)
-        print("Top k similar labels:\n",distances[:K])
+        print(f"Top {K} labels:\n")
+        for item in distances[:K]:
+            print(f"label id:{item[0]}, category: {item[1]}, distance: {item[2]}")
     
     elif query_latent_semantics == 3:
         latent_semantics = task5.task5_execution(query_feature_model,k,dimredtech)
@@ -137,7 +145,9 @@ def task8_execution(query_image_data, query_latent_semantics, K, dataset, collec
             distances = euclidian_dist(query_rep_ls,latent_semantics)
         else:
             distances = probabilistic_dist(query_rep_ls,latent_semantics)
-        print("Top k similar labels:\n",distances[:K])
+        print(f"Top {K} labels:\n")
+        for item in distances[:K]:
+            print(f"label id:{item[0]}, category: {item[1]}, distance: {item[2]}")
         
     elif query_latent_semantics == 4:
         latent_semantics = task6.task6_execution(query_feature_model,k,dimredtech)
@@ -149,25 +159,18 @@ def task8_execution(query_image_data, query_latent_semantics, K, dataset, collec
             distances = euclidian_dist(query_image_vector_ls,representatives_ls)
         else:
             distances = probabilistic_dist(query_image_vector_ls,representatives_ls)
-        print("Top k similar labels:\n",distances[:K])
+        print(f"Top {K} labels:\n")
+        for item in distances[:K]:
+            print(f"label id:{item[0]}, category: {item[1]}, distance: {item[2]}")
         
 
     return True
 
 def task8():
-    cl = pymongo.MongoClient("mongodb://localhost:27017")
-    db = cl["caltech101db"]
-    collection1 = db["phase2trainingdataset"]
-    collection1_name = "phase2trainingdataset"
-    collection2 = db["labelrepresentativeimages"]
-    collection2_name = "labelrepresentativeimages"
-    caltech101_directory = os.path.join(path, "../../data")
-    dataset = datasets.Caltech101(caltech101_directory, download=False)
-    data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True, num_workers=8)
     
     print("Enter '1' if you want to give an image ID as input or enter '2' if you want to give Image File as an Input: ")
-    #query_type = int(input("Enter query type: "))
-    query_type = 1
+    query_type = int(input("Enter query type: "))
+    #query_type = 1
     query_image_id = None
     query_image_file = None
     if query_type == 1:
@@ -199,7 +202,7 @@ def task8():
                 break
     elif query_image_file != None:
         query_image_data = Image.open(query_image_file)    
-    task8_execution(query_image_data, query_latent_semantics, K, dataset, collection2)
+    task8_execution(query_image_data, query_latent_semantics, K)
 
 
 task8()

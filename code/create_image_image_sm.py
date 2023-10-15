@@ -31,9 +31,9 @@ if __name__ == "__main__":
     collection = db["phase2trainingdataset"]
     caltech101_directory = os.path.join(path, "../data")
     dataset = datasets.Caltech101(caltech101_directory, download=False)
-    #"color_moments", "hog",, "resnet50_fc","resnet_softmax"
-    feature_models = [ "resnet50_layer3", "resnet50_avgpool"]
+    
+    feature_models = ["resnet50_layer3", "resnet50_avgpool","color_moments", "hog", "resnet50_fc","resnet_softmax"]
     for i in range(len(feature_models)):
         data_matrix = createMatrix(feature_models[i] + "_feature_descriptor")
-        file_path = f"{os.path.join(os.getcwd(), f'/image_image_sm_matrices/image_image_sm_{feature_models[i]}.csv')}"
+        file_path = f"{os.path.join(os.getcwd(), f'../image_image_sm_matrices/image_image_sm_{feature_models[i]}.csv')}"
         np.savetxt(file_path, data_matrix, delimiter=",")
