@@ -153,7 +153,10 @@ def task8_execution(query_image_data, query_latent_semantics, K):
         latent_semantics = task6.task6_execution(query_feature_model,k,dimredtech)
         data_matrix = np.loadtxt(f"{os.path.join(os.getcwd(), f'../data_matrices/data_matrix_{query_feature_model}.csv')}", delimiter=',')
         distances = euclidian_dist_plain(query_image_vector,data_matrix)
+        if dimredtech == 3:
+            latent_semantics = np.transpose(latent_semantics)
         query_image_vector_ls = latent_semantics[distances[0][0]]
+
         representatives_ls = [latent_semantics[int(label_dict[rep_keyname[query_feature_model][1]]/2)] for label_dict in representatives]
         if dimredtech!=3:
             distances = euclidian_dist(query_image_vector_ls,representatives_ls)

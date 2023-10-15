@@ -89,7 +89,7 @@ def task3():
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True, num_workers=8)
     
     print("\nSelect a feature model(Select one among these): ")
-    print("1. color_moments\n2. hog\n3. resnet50_layer3\n4. resnet50_avgpool\n5. resnet50_fc\n\n")
+    print("1. color_moments\n2. hog\n3. resnet50_layer3\n4. resnet50_avgpool\n5. resnet50_fc\n6. resnet_softmax\n\n")
     query_feature_model = input("Enter input: ")
     query_feature_model = str(query_feature_model)
     

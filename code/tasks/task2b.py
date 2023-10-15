@@ -113,4 +113,4 @@ if __name__ == "__main__":
     distances = task2b(query_image_features[0], k)
     print(f"Top {k} labels:\n")
     for item in distances:
-        print(f"label id:{item[0]}, category: {item[1]}, distance: {item[2]}\n")
+        print(f"label id:{item[0]}, category: {item[1]}, distance: {item[2]}")
